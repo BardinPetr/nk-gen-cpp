@@ -1,0 +1,29 @@
+{% import "method.jinja" as method %}
+{% set guard = (ns + "_" + cls + "_IDL_HPP") | upper %}
+
+#ifndef {{ guard }}
+#define {{ guard }}
+
+#include <coresrv/sl/sl_api.h>
+#include <coresrv/nk/transport-kos.h>
+
+#include "{{ ns }}/{{ cls }}.idl.h"
+
+namespace {{ ns }} {
+
+    class {{ cls }} {
+    private:
+        NkKosTransport *transport;
+        nk_iid_t riid;
+
+    public:
+        {{ cls }}(NkKosTransport *transport, const char* endpoint_name);
+
+        {% for m in methods %}
+            {{ method.method_def(m.name, "", m.res_type) }}
+        {% endfor %}
+    };
+
+};
+
+#endif //{{ guard }}

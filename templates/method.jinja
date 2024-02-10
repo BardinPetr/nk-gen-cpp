@@ -1,0 +1,9 @@
+{% macro method_def(name, params, return) -%}
+    {{ return }} {{ name }}({{ params | join(',') }});
+{%- endmacro %}
+
+{% macro method_impl(namespace, class, name, params, return, body) -%}
+    {{ return }} {{ namespace }}::{{ class }}::{{ name }}({{ params | join(',') }}) {
+        {{ body }}
+    }
+{%- endmacro %}

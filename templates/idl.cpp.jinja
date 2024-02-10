@@ -1,0 +1,20 @@
+{% import "method.jinja" as method %}
+{% import "idl.jinja" as idl %}
+
+#include <spdlog/spdlog.h>
+
+#include "{{ cls }}.idl.hpp"
+{% autoescape true %}
+{{ ns }}::{{ cls }}::{{ cls }}(NkKosTransport *transport, const char *endpoint_name) : transport(transport) {
+    riid = ServiceLocatorGetRiid(transport->handle, endpoint_name);
+    if (INVALID_RIID == riid) {
+        spdlog::error("Service RIID {} not found", endpoint_name);
+    }
+}
+
+{% for m in methods %}
+
+    {{ method.method_impl(ns, cls, m.name, "", m.res_type, idl.proxy(interface.fqn, m)) }}
+
+{% endfor %}
+{% endautoescape%}

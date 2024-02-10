@@ -1,0 +1,45 @@
+{% macro proxy(fqn, m) -%}
+
+    {{ fqn }}_{{ m.name }}_req req{
+            {},
+            {}
+    };
+    static {{ fqn }}_{{ m.name }}_res res{};
+
+    nk_req_reset(&req);
+    nk_req_reset(&res);
+
+    nk_msg_set_method_id(
+            &req,
+            this->riid,
+            {{ fqn }}_{{ m.name }}_mid
+    );
+    nk_msg_set_method_id(
+            &res,
+            this->riid,
+            {{ fqn }}_{{ m.name }}_mid
+    );
+
+    nk_msg_set_ncaps(
+            &res,
+            {{ fqn }}_{{ m.name }}_res_handles
+    );
+    nk_msg_set_ncaps(
+            &req,
+            {{ fqn }}_{{ m.name }}_req_handles
+    );
+
+    nk_err_t rc = nk_transport_call(
+            &this->transport->base,
+            &req.base_,
+            nullptr,
+            &res.base_,
+            nullptr
+    );
+
+    if (rc != NK_EOK)
+        throw rc;
+
+    return &res;
+
+{%- endmacro %}
