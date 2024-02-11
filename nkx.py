@@ -130,10 +130,13 @@ idf = InterfaceDefinition(
         InterfaceMethodDefinition(
             "SetMode",
             [
-                InterfaceParameterDefinition("CrossedDirectionsMode", "mode"),
-                InterfaceParameterDefinition("UInt8", "par"),
+                InterfaceParameterDefinition("CrossedDirectionsMode", "obj"),
+                InterfaceParameterDefinition("UInt8", "val"),
             ],
-            [],
+            [
+                InterfaceParameterDefinition("CrossedDirectionsMode", "oobj"),
+                InterfaceParameterDefinition("UInt8", "oval"),
+            ],
         ),
         # InterfaceMethodDefinition(
         #     "methodA",
