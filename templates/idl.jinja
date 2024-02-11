@@ -1,10 +1,9 @@
-{% macro proxy(fqn, m) -%}
+{% macro proxy(m) -%}
 
-    {{ fqn }}_{{ m.name }}_req req{
-            {},
-            {}
+    {{ m.req_type }} req{
+            {}, {{ m.arg_in | map(attribute='name') | join(', ') }}
     };
-    static {{ fqn }}_{{ m.name }}_res res{};
+    static {{ m.res_type }} res{};
 
     nk_req_reset(&req);
     nk_req_reset(&res);
@@ -12,21 +11,21 @@
     nk_msg_set_method_id(
             &req,
             this->riid,
-            {{ fqn }}_{{ m.name }}_mid
+            {{ m.ctx.prefix }}{{ m.name }}_mid
     );
     nk_msg_set_method_id(
             &res,
             this->riid,
-            {{ fqn }}_{{ m.name }}_mid
+            {{ m.ctx.prefix }}{{ m.name }}_mid
     );
 
     nk_msg_set_ncaps(
-            &res,
-            {{ fqn }}_{{ m.name }}_res_handles
+            &req,
+            {{ m.req_type }}_handles
     );
     nk_msg_set_ncaps(
-            &req,
-            {{ fqn }}_{{ m.name }}_req_handles
+            &res,
+            {{ m.res_type }}_handles
     );
 
     nk_err_t rc = nk_transport_call(

@@ -1,3 +1,5 @@
+{% autoescape true %}
+
 {% import "method.jinja" as method %}
 {% set guard = (ns + "_" + cls + "_IDL_HPP") | upper %}
 
@@ -17,13 +19,16 @@ namespace {{ ns }} {
         nk_iid_t riid;
 
     public:
+        {{ cls }}(NkKosTransport *transport, nk_iid_t riid);
         {{ cls }}(NkKosTransport *transport, const char* endpoint_name);
 
         {% for m in methods %}
-            {{ method.method_def(m.name, "", m.res_type) }}
+            {{ method.method_def(m.name, m.arg_in, "{}*".format(m.res_type)) }}
         {% endfor %}
     };
 
 };
 
 #endif //{{ guard }}
+
+{% endautoescape %}
