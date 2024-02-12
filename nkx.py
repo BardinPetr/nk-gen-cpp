@@ -123,37 +123,38 @@ class InterfacePrinter:
         open(f"{base_path}.idl.cpp", "w").write(source)
 
 
-idf = InterfaceDefinition(
-    'trafficlight',
-    'ILightMode',
-    [
-        InterfaceMethodDefinition(
-            "SetMode",
-            [
-                InterfaceParameterDefinition("CrossedDirectionsMode", "obj"),
-                InterfaceParameterDefinition("UInt8", "val"),
-            ],
-            [
-                InterfaceParameterDefinition("CrossedDirectionsMode", "oobj"),
-                InterfaceParameterDefinition("UInt8", "oval"),
-            ],
-        ),
-        # InterfaceMethodDefinition(
-        #     "methodA",
-        #     [InterfaceParameterDefinition("UInt8", "in1"),InterfaceParameterDefinition("DirectionMode", "out1")],
-        #     []
-        # ),
-        # InterfaceMethodDefinition(
-        #     "methodB",
-        #     [InterfaceParameterDefinition("UInt8", "in1"), InterfaceParameterDefinition("DirectionColor", "in2")],
-        #     [InterfaceParameterDefinition("UInt8", "out1")],
-        # ),
-        # InterfaceMethodDefinition(
-        #     "methodC",
-        #     [InterfaceParameterDefinition("UInt8", "in1")],
-        #     [InterfaceParameterDefinition("DirectionColor", "out1"), InterfaceParameterDefinition("UInt8", "out2")],
-        # ),
-    ]
-)
+if __name__ == "__main__":
+    idf = InterfaceDefinition(
+        'trafficlight',
+        'ILightMode',
+        [
+            InterfaceMethodDefinition(
+                "SetMode",
+                [
+                    InterfaceParameterDefinition("CrossedDirectionsMode", "obj"),
+                    InterfaceParameterDefinition("UInt8", "val"),
+                ],
+                [
+                    InterfaceParameterDefinition("CrossedDirectionsMode", "oobj"),
+                    InterfaceParameterDefinition("UInt8", "oval"),
+                ],
+            ),
+            # InterfaceMethodDefinition(
+            #     "methodA",
+            #     [InterfaceParameterDefinition("UInt8", "in1"),InterfaceParameterDefinition("DirectionMode", "out1")],
+            #     []
+            # ),
+            # InterfaceMethodDefinition(
+            #     "methodB",
+            #     [InterfaceParameterDefinition("UInt8", "in1"), InterfaceParameterDefinition("DirectionColor", "in2")],
+            #     [InterfaceParameterDefinition("UInt8", "out1")],
+            # ),
+            # InterfaceMethodDefinition(
+            #     "methodC",
+            #     [InterfaceParameterDefinition("UInt8", "in1")],
+            #     [InterfaceParameterDefinition("DirectionColor", "out1"), InterfaceParameterDefinition("UInt8", "out2")],
+            # ),
+        ]
+    )
 
-InterfacePrinter().process(idf, "/home/petr/CLionProjects/trafficlight/tl_control/src")
+    InterfacePrinter().process(idf, "/home/petr/CLionProjects/trafficlight/tl_control/src")
