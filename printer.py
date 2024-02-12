@@ -3,32 +3,22 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 from IDLModels import *
 from parser import parse_idl
 
-TYPES_PRIMITIVE = {f"{u}Int{i}" for u in ["S", "U"] for i in [8, 16, 32, 64]}
-TYPES_ARRAY = {"bytes", "string"}
-TYPES_ARRAY_GENERIC = {"bytes", "string"}
-TYPES_POINTER = {*TYPES_ARRAY, *TYPES_ARRAY_GENERIC}
-TYPES_INTERNAL = {*TYPES_PRIMITIVE, *TYPES_POINTER}
-
 
 class IdentifierPrinter:
     def __init__(self, ctx: IDLContext | None):
         self.ctx = ctx
 
-    def print_type_cpp(self, i: IDLIdentifier):
-        name = i.name
-        if name in TYPES_PRIMITIVE:
-            return f"nk_{name.lower()}_t"
-        return f"{self.ctx.fqn}_{i.name}"
-
-    def print_decl(self, decl: IDLDeclaration) -> str:
-        return f"{decl.type.name} {decl.name}"
+    def print_type_cpp(self, t: IDLType):
+        if isinstance(t, IDLTypePrimitive):
+            return str(t)
+        if isinstance(t, IDLTypeID):
+            return f"{self.ctx.fqn}_{t}"
+        return "ERR"
 
     def print_method_argument(self, arg: IDLMethodArgument) -> str:
-        type_name = arg.decl.type.name
         type_cpp = self.print_type_cpp(arg.decl.type)
 
-        # use references for anything except integers
-        if type_name not in TYPES_PRIMITIVE:
+        if not isinstance(arg.decl.type, IDLTypePrimitive):
             type_cpp = f"const {type_cpp}&"
 
         return f"{type_cpp} {arg.decl.name}"
