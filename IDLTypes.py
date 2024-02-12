@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Dict
+from typing import Dict, Optional
 
 
 class IDLTypeContainerPrimitive(StrEnum):
@@ -11,11 +11,12 @@ class IDLTypeContainerPrimitive(StrEnum):
 
 
 class IDLType:
-    pass
+    resolves: 'IDLType'
 
 
 @dataclass
 class IDLTypeStruct(IDLType):
+    name: str
     children: Dict[str, IDLType]
 
 
@@ -23,12 +24,6 @@ class IDLTypeStruct(IDLType):
 class IDLTypeTypeDef(IDLType):
     name: str
     children: IDLType
-
-
-@dataclass
-class IDLTypeStruct(IDLType):
-    name: str
-    children: Dict[str, IDLType]
 
 
 @dataclass
@@ -55,7 +50,7 @@ class IDLTypePrimitive(IDLType, StrEnum):
 
 
 @dataclass
-class IDLListType(IDLType):
+class IDLTypeList(IDLType):
     container: IDLTypeContainerPrimitive
     element: IDLType
 

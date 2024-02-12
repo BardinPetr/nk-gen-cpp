@@ -1,0 +1,34 @@
+package trafficlight.ILightMode
+typedef UInt32 ModeType;
+struct DirectionColor {
+    UInt8 r;
+    UInt8 y;
+    UInt8 g;
+}
+typedef ModeType DirectionMode;
+struct CrossedDirectionsMode {
+    DirectionMode dir0;
+    DirectionMode dir1;
+    sequence<ModeType, 100> sq;
+}
+typedef sequence<UInt8, 100> TDSeq;
+typedef sequence<array<CrossedDirectionsMode, 100>, 100> TDSeq3;
+struct QQ {
+    TDSeq3 qw;
+}
+interface {
+    SetMode(
+        in CrossedDirectionsMode obj, in DirectionMode val, in TDSeq seq,
+        out DirectionColor oobj, out QQ oval, out sequence<TDSeq, 100> oseq);
+}
+
+
+TRANSLATES TO:
+SetMode(
+	obj:	IN	IDLTypeStruct(name='CrossedDirectionsMode', children={'dir0': <IDLTypePrimitive.UInt32: 'nk_uint32_t'>, 'dir1': <IDLTypePrimitive.UInt32: 'nk_uint32_t'>, 'sq': IDLTypeList(container=<IDLTypeContainerPrimitive.Sequence: 'sequence'>, element=<IDLTypePrimitive.UInt32: 'nk_uint32_t'>)})
+	val:	IN	nk_uint32_t
+	seq:	IN	vector<nk_uint8_t>
+	oobj:	OUT	IDLTypeStruct(name='DirectionColor', children={'r': <IDLTypePrimitive.UInt8: 'nk_uint8_t'>, 'y': <IDLTypePrimitive.UInt8: 'nk_uint8_t'>, 'g': <IDLTypePrimitive.UInt8: 'nk_uint8_t'>})
+	oval:	OUT	IDLTypeStruct(name='QQ', children={'qw': IDLTypeList(container=<IDLTypeContainerPrimitive.Sequence: 'sequence'>, element=IDLTypeList(container=<IDLTypeContainerPrimitive.Array: 'array'>, element=IDLTypeStruct(name='CrossedDirectionsMode', children={'dir0': <IDLTypePrimitive.UInt32: 'nk_uint32_t'>, 'dir1': <IDLTypePrimitive.UInt32: 'nk_uint32_t'>, 'sq': IDLTypeList(container=<IDLTypeContainerPrimitive.Sequence: 'sequence'>, element=<IDLTypePrimitive.UInt32: 'nk_uint32_t'>)})))})
+	oseq:	OUT	vector<vector<nk_uint8_t>>
+)

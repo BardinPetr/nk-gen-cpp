@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import List, Optional, Dict
 
-from IDLTypes import IDLType
+from IDLTypes import IDLType, IDLTypeID, IDLTypeList, IDLTypeStruct, IDLTypeTypeDef
 
 
 @dataclass
@@ -68,7 +68,7 @@ class IDLContext:
     def __post_init__(self):
         self.namespace = self._translate_separators(self.namespace)
         self.classname = self._translate_separators(self.classname)
-        self._compile_typedefs()
+        self._resolve_identifiers()
 
     @staticmethod
     def _translate_separators(x: str) -> str:
@@ -78,13 +78,26 @@ class IDLContext:
     def fqn(self) -> str:
         return f"{self.namespace}_{self.classname}"
 
-    def resolve_type(self, search: IDLType) -> IDLType:
-        if self.typedefs is None: return search
+    def resolve_types(self, root: IDLType) -> IDLType:
+        """
+        Recursively resolve all ID types to definitions.
+        Use by replacing target type with return value of function.
+        """
+        if isinstance(root, IDLTypeID) and root.name in self.typedefs:
+            root = self.resolve_types(self.typedefs[root.name])
 
-        next_name = self.typedefs.get(str(search), None)
-        if next_name is not None:
-            return self.resolve_type(next_name)
-        return search
+        elif isinstance(root, IDLTypeTypeDef):
+            root = self.resolve_types(root.children)
 
-    def _compile_typedefs(self):
-        pass
+        elif isinstance(root, IDLTypeList):
+            root.element = self.resolve_types(root.element)
+
+        elif isinstance(root, IDLTypeStruct):
+            root.children = {n: self.resolve_types(t) for n, t in root.children.items()}
+
+        return root
+
+    def _resolve_identifiers(self):
+        for m in self.interface.methods:
+            for arg in m.arguments:
+                arg.decl.type.resolves = self.resolve_types(arg.decl.type)
