@@ -1,9 +1,9 @@
-{% macro proxy(m) -%}
+{% macro proxy(ctx, m) -%}
 
-    {{ m.req_type }} req{
-            {}, {{ m.arg_in | map(attribute='name') | join(', ') }}
+    {{ method_printer.method_request_type(m) }} req{
+            {}, {{ m.in_args | map(attribute='name') | join(', ') }}
     };
-    static {{ m.res_type }} res{};
+    static {{ method_printer.method_response_type(m) }} res{};
 
     nk_req_reset(&req);
     nk_req_reset(&res);
@@ -11,21 +11,21 @@
     nk_msg_set_method_id(
             &req,
             this->riid,
-            {{ m.ctx.prefix }}{{ m.name }}_mid
+            {{ ctx.fqn }}_{{ m.name }}_mid
     );
     nk_msg_set_method_id(
             &res,
             this->riid,
-            {{ m.ctx.prefix }}{{ m.name }}_mid
+            {{ ctx.fqn }}_{{ m.name }}_mid
     );
 
     nk_msg_set_ncaps(
             &req,
-            {{ m.req_type }}_handles
+            {{ method_printer.method_request_type(m) }}_handles
     );
     nk_msg_set_ncaps(
             &res,
-            {{ m.res_type }}_handles
+            {{ method_printer.method_response_type(m) }}_handles
     );
 
     nk_err_t rc = nk_transport_call(

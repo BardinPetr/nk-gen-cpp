@@ -47,7 +47,7 @@ class InterfaceBuilderVisitor(IDLVisitor):
 
     def visitMethod(self, ctx: IDLParser.MethodContext):
         return IDLMethod(
-            name=IDLIdentifier(ctx.ID().getText()),
+            name=ctx.ID().getText(),
             arguments=self.visit(ctx.method_arguments())
         )
 
@@ -59,23 +59,24 @@ class InterfaceBuilderVisitor(IDLVisitor):
 
     def visitDeclaration(self, ctx: IDLParser.DeclarationContext):
         return IDLDeclaration(
-            type=IDLIdentifier(ctx.ID().getText()),
-            name=ctx.type_().getText()
+            type=IDLIdentifier(ctx.type_().getText()),
+            name=ctx.ID().getText()
         )
 
 
-def main(argv):
-    idl_file = "/home/petr/CLionProjects/trafficlight/resources/idl/ILightMode.idl"
-
-    fs = FileStream(idl_file)
+def parse_idl(path: str) -> IDLContext:
+    fs = FileStream(path)
     lexer = IDLLexer(fs)
     tokens = CommonTokenStream(lexer)
     tree = IDLParser(tokens).idl()
 
     v = InterfaceBuilderVisitor()
-    interface = v.visit(tree)
-    print(interface)
+    ctx = v.visit(tree)
+
+    return ctx
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    idl_file = "/home/petr/CLionProjects/trafficlight/resources/idl/ILightMode.idl"
+    res = parse_idl(idl_file)
+    print(res)
