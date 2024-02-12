@@ -88,7 +88,7 @@ if __name__ == "__main__":
     idl_ctx = parse_idl(idl_file)
 
     for m in idl_ctx.interface.methods:
-        l = '\n\t'.join(map(lambda arg: f"{arg.name}:\t{arg.dir.name}\t{arg.decl.type.resolves}", m.arguments))
+        l = '\n\t'.join(map(lambda arg: f"{arg.name}:\t{arg.dir.name}\t{arg.decl.type.storage.name}\t{arg.decl.type.resolves}", m.arguments))
         print(f"{m.name}(\n\t{l}\n)")
 
     printer = InterfacePrinter()

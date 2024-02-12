@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from enum import StrEnum
+from enum import StrEnum, Enum
 from typing import Dict, Optional
 
 
@@ -10,8 +10,15 @@ class IDLTypeContainerPrimitive(StrEnum):
     Sequence = "sequence"
 
 
+class IDLTypeStorage(Enum):
+    VALUE = 1
+    REFERENCE = 2
+    ARENA = 3
+
+
 class IDLType:
     resolves: 'IDLType'
+    storage: IDLTypeStorage = IDLTypeStorage.VALUE
 
 
 @dataclass

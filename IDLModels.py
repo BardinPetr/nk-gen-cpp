@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 from typing import List, Optional, Dict
 
-from IDLTypes import IDLType, IDLTypeID, IDLTypeList, IDLTypeStruct, IDLTypeTypeDef
+from IDLTypes import IDLType, IDLTypeID, IDLTypeList, IDLTypeStruct, IDLTypeTypeDef, IDLTypeStorage, IDLTypePrimitive
 
 
 @dataclass
@@ -97,7 +97,26 @@ class IDLContext:
 
         return root
 
+    def resolve_storage(self, root: IDLType) -> IDLTypeStorage:
+        """
+        Recursively check subtypes of given type to decide how it should be stored.
+        If type is or has at least one 'array' type/subtype then whole tree gets IDLTypeStorage.ARENA
+        Else primitives gets "VALUE", structures gets "REFERENCE"
+        """
+        if isinstance(root, IDLTypeList):
+            return IDLTypeStorage.ARENA
+        if isinstance(root, IDLTypePrimitive):
+            return IDLTypeStorage.VALUE
+        if isinstance(root, IDLTypeStruct):
+            if any(self.resolve_storage(i) == IDLTypeStorage.ARENA
+                   for i in root.children.values()):
+                return IDLTypeStorage.ARENA
+            return IDLTypeStorage.REFERENCE
+
+        raise Exception("Not implemented")
+
     def _resolve_identifiers(self):
         for m in self.interface.methods:
             for arg in m.arguments:
                 arg.decl.type.resolves = self.resolve_types(arg.decl.type)
+                arg.decl.type.storage = self.resolve_storage(arg.decl.type.resolves)
