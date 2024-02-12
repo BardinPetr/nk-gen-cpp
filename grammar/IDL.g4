@@ -12,7 +12,8 @@ statement_union:     'union' ID '{' declaration_block '}';
 statement_package:   'package' PACKAGE_ID;
 statement_import:    'import' PACKAGE_ID;
 statement_typedef:   'typedef' type ID ';';
-statement_const:     'const'   (TYPE_PRIMITIVE | ID) ID '=' INT ';';
+statement_const:     'const'   const_type ID '=' INT ';';
+const_type:          TYPE_PRIMITIVE | ID;
 
 method_block:        (method ';')*;
 method:              ID '(' method_arguments? ')';

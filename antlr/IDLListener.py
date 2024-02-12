@@ -98,6 +98,15 @@ class IDLListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by IDLParser#const_type.
+    def enterConst_type(self, ctx:IDLParser.Const_typeContext):
+        pass
+
+    # Exit a parse tree produced by IDLParser#const_type.
+    def exitConst_type(self, ctx:IDLParser.Const_typeContext):
+        pass
+
+
     # Enter a parse tree produced by IDLParser#method_block.
     def enterMethod_block(self, ctx:IDLParser.Method_blockContext):
         pass

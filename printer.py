@@ -1,6 +1,7 @@
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 from IDLModels import *
+from IDLTypes import IDLTypePrimitive, IDLTypeID
 from parser import parse_idl
 
 
@@ -8,16 +9,15 @@ class IdentifierPrinter:
     def __init__(self, ctx: IDLContext | None):
         self.ctx = ctx
 
-    def print_type_cpp(self, t: IDLType):
+    def print_type_cpp(self, t: IDLType) -> str:
         if isinstance(t, IDLTypePrimitive):
             return str(t)
         if isinstance(t, IDLTypeID):
             return f"{self.ctx.fqn}_{t}"
-        return "ERR"
+        return str(t)
 
     def print_method_argument(self, arg: IDLMethodArgument) -> str:
         type_cpp = self.print_type_cpp(arg.decl.type)
-
         if not isinstance(arg.decl.type, IDLTypePrimitive):
             type_cpp = f"const {type_cpp}&"
 

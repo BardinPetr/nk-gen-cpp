@@ -3,6 +3,7 @@ from typing import Optional
 from antlr4 import *
 
 from IDLModels import *
+from IDLTypes import *
 
 from antlr.IDLListener import *
 from antlr.IDLLexer import *
@@ -27,6 +28,10 @@ class InterfaceBuilderVisitor(IDLVisitor):
         print("Imports are not supported")
         exit(1)
 
+    def visitStatement_union(self, ctx: IDLParser.Statement_unionContext):
+        print("Unions are not supported")
+        exit(1)
+
     def visitIdl(self, ctx: IDLParser.IdlContext):
         # parse package name
         package = ctx.statement_package().PACKAGE_ID().getText()
@@ -34,20 +39,20 @@ class InterfaceBuilderVisitor(IDLVisitor):
         namespace, classname = '.'.join(packages[:-1]), packages[-1]
         print(f"Processing interface {classname} of package {namespace}")
 
-        # parse single interface
-        interface: IDLInterface = self.visit(ctx.interface())
-        interface.name = classname
-
         # parse typedefs
-        typedefs = [self.visit(typedef) for i in ctx.statements().statement() if (typedef := i.statement_typedef())]
-        typedefs = {name: target_class for target_class, name in typedefs}
+        typedefs = {}
+        consts = {}
+        for i in ctx.statements().statement():
+            definition = self.visit(i)[0]
+            if isinstance(definition, IDLTypeStruct | IDLTypeTypeDef):
+                typedefs[definition.name] = definition
+            if isinstance(definition, IDLConst):
+                consts[definition.name] = definition
 
-        return IDLContext(
-            namespace,
-            classname,
-            interface,
-            typedefs
-        )
+        # parse single interface
+        interface = self.visit(ctx.interface())
+        interface.name = classname
+        return IDLContext(namespace, classname, interface, typedefs, consts)
 
     def visitInterface(self, ctx: IDLParser.InterfaceContext):
         methods = self.visit(ctx.method_block())
@@ -90,8 +95,26 @@ class InterfaceBuilderVisitor(IDLVisitor):
             )
         return None
 
-    def visitStatement_typedef(self, ctx: IDLParser.Statement_typedefContext):
-        return ctx.type_().getText(), ctx.ID().getText()
+    def visitStatement_typedef(self, ctx: IDLParser.Statement_typedefContext) -> IDLType:
+        return IDLTypeTypeDef(ctx.ID().getText(), self.visit(ctx.type_()))
+
+    def visitStatement_struct(self, ctx: IDLParser.Statement_structContext) -> IDLType:
+        declarations = self.visit(ctx.declaration_block())
+        declarations = {i.name: i.type for i in declarations}
+        return IDLTypeStruct(ctx.ID().getText(), declarations)
+
+    def visitStatement_const(self, ctx: IDLParser.Statement_constContext) -> IDLConst:
+        c_type: IDLParser.Const_typeContext = ctx.const_type()
+        if c_id := c_type.TYPE_PRIMITIVE():
+            idl_type = IDLTypePrimitive[c_id.getText()]
+        else:
+            idl_type = IDLTypeID(c_type.ID().getText())
+
+        return IDLConst(
+            name=ctx.ID().getText(),
+            type=idl_type,
+            value=int(ctx.INT().getText())
+        )
 
 
 def parse_idl(path: str) -> IDLContext:

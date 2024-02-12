@@ -59,6 +59,11 @@ class IDLVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by IDLParser#const_type.
+    def visitConst_type(self, ctx:IDLParser.Const_typeContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by IDLParser#method_block.
     def visitMethod_block(self, ctx:IDLParser.Method_blockContext):
         return self.visitChildren(ctx)
