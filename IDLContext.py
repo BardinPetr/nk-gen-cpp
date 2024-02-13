@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 
 from IDLModels import IDLInterface, IDLConst
-from IDLTypes import IDLType, IDLTypeStruct, IDLTypeStorage, IDLTypeList, IDLTypePrimitive, IDLTypeID, IDLTypeTypeDef
+from IDLTypes import IDLType, IDLTypeStruct, IDLTypeStorage, IDLTypeList, IDLTypeID, IDLTypeTypeDef
 
 
 @dataclass
@@ -51,17 +51,12 @@ class IDLContext:
         If type is or has at least one 'array' type/subtype then whole tree gets IDLTypeStorage.ARENA
         Else primitives gets "VALUE", structures gets "REFERENCE"
         """
-        if isinstance(root, IDLTypeList):
-            return IDLTypeStorage.ARENA
-        if isinstance(root, IDLTypePrimitive):
-            return IDLTypeStorage.VALUE
         if isinstance(root, IDLTypeStruct):
-            if any(self.resolve_storage(i) == IDLTypeStorage.ARENA
-                   for i in root.children.values()):
+            if any(self.resolve_storage(i) == IDLTypeStorage.ARENA for i in root.children.values()):
                 return IDLTypeStorage.ARENA
             return IDLTypeStorage.REFERENCE
 
-        raise Exception("Not implemented")
+        return root.storage
 
     def _resolve_identifiers(self):
         for m in self.interface.methods:

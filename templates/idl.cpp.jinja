@@ -22,7 +22,7 @@
 }
 
 {% for m in methods %}
-    {{ method.method_impl(ns, cls, m.name, method_printer.arguments(m), method_printer.return_type(m), idl.proxy(ctx, m)) }}
+    {{ method.method_impl(ns, cls, m.name, method_printer.arguments(m), method_printer.return_type(m), idl.proxy(m)) }}
 {% endfor %}
 
 {% endautoescape%}

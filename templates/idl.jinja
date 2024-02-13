@@ -1,9 +1,14 @@
-{% macro proxy(ctx, m) -%}
+{% import "arena_out.jinja" as arena %}
+
+{% macro proxy(m) -%}
 
     {{ method_printer.method_request_type(m) }} req{
             {}, {{ m.arguments | fixed_args | in_args | map(attribute='name') | join(', ') }}
     };
     static {{ method_printer.method_response_type(m) }} res{};
+
+    reqArena.reset();
+    resArena.reset();
 
     nk_req_reset(&req);
     nk_req_reset(&res);
@@ -32,17 +37,23 @@
             &this->transport->base,
             &req.base_,
             nullptr,
+{#            &reqArena,#}
             &res.base_,
+{#            &resArena#}
             nullptr
     );
 
-    static {{ method_printer.response_wrapper_name(m) }} out{
-        rc,
-        {% for a in m.arguments | out_args | fixed_args %}
-            res.{{ a.name }},
-        {%- endfor %}
-    };
+{#    static {{ method_printer.response_wrapper_name(m) }} out{#}
+{#        rc,#}
+{#        {% for a in m.arguments | out_args | fixed_args %}#}
+{#            res.{{ a.name }},#}
+{#        {%- endfor %}#}
+{#    };#}
 
-    return out;
+    {% for a in m.arguments | out_args | arena_args %}
+        {{ arena.arena_get("res", a.name, "res.{}".format(a.name), a.type) }}
+    {% endfor %}
+
+    return &res;
 
 {%- endmacro %}

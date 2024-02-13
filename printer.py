@@ -1,3 +1,5 @@
+import re
+import sys
 from typing import List
 
 from jinja2 import Environment, PackageLoader, select_autoescape
@@ -6,6 +8,10 @@ from IDLContext import IDLContext
 from IDLModels import IDLMethodArgument, IDLMethod, IDLMethodArgumentDirection
 from IDLTypes import IDLTypeStorage
 from parser import parse_idl
+
+
+def prettify(text: str) -> str:
+    return re.sub(r"\n{2,}", "\n", text)
 
 
 def storage_args_filter(typ: IDLTypeStorage, inv: bool = False):
@@ -47,7 +53,7 @@ class MethodPrinter:
         return f"{self.ctx.namespace}::{self.ctx.classname}::{m.name}Response"
 
     def return_type(self, m: IDLMethod) -> str:
-        return f"const {self.response_wrapper_name(m)}&"
+        return f"const {self.ctx.namespace}_{self.ctx.classname}_{m.name}_res*"
 
 
 class InterfacePrinter:
@@ -56,6 +62,7 @@ class InterfacePrinter:
             loader=PackageLoader("printer"),
             autoescape=select_autoescape()
         )
+        self.env.filters["type"] = lambda x: type(x).__name__
         self.env.filters["arena_args"] = storage_args_filter(IDLTypeStorage.ARENA)
         self.env.filters["fixed_args"] = storage_args_filter(IDLTypeStorage.ARENA, True)
         self.env.filters["in_args"] = dir_args_filter(IDLMethodArgumentDirection.IN)
@@ -66,34 +73,44 @@ class InterfacePrinter:
     def process(self, ctx: IDLContext, target_dir: str):
         self.env.globals["method_printer"] = MethodPrinter(ctx)
         self.env.globals["id_printer"] = IdentifierPrinter(ctx)
+        self.env.globals["ctx"] = ctx
 
         data = dict(
-            ctx=ctx,
             ns=ctx.namespace,
             cls=ctx.classname,
             methods=ctx.interface.methods
         )
+
         header = self.template_header.render(data)
         source = self.template_source.render(data)
 
-        base_path = f"{target_dir}/{ctx.namespace}/{ctx.classname}"
+        header = prettify(header)
+        source = prettify(source)
+
+        base_path = f"{target_dir}/{ctx.classname}"
         with open(f"{base_path}.idl.hpp", "w") as f:
             f.write(header)
         with open(f"{base_path}.idl.cpp", "w") as f:
             f.write(source)
 
+    @staticmethod
+    def debug(ctx: IDLContext):
+        for m in ctx.interface.methods:
+            l = '\n\t'.join(
+                map(lambda arg: f"{arg.name}:\t{arg.dir.name}\t{arg.decl.type.storage.name}\t{arg.decl.type}",
+                    m.arguments))
+            print(f"{m.name}(\n\t{l}\n)")
+
 
 if __name__ == "__main__":
-    idl_file = "/home/petr/CLionProjects/trafficlight/resources/idl/ILightMode.idl"
-    out_dir = "/home/petr/CLionProjects/trafficlight/tl_control/src"
+    if len(sys.argv) != 3:
+        print("Usage: printer.py <idl file> <target directory>")
+        exit(1)
+
+    idl_file, out_dir = sys.argv[1:]
 
     idl_ctx = parse_idl(idl_file)
 
-    for m in idl_ctx.interface.methods:
-        l = '\n\t'.join(
-            map(lambda arg: f"{arg.name}:\t{arg.dir.name}\t{arg.decl.type.storage.name}\t{arg.decl.type}",
-                m.arguments))
-        print(f"{m.name}(\n\t{l}\n)")
-
     printer = InterfacePrinter()
     printer.process(idl_ctx, out_dir)
+    printer.debug(idl_ctx)

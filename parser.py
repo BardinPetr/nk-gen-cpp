@@ -101,6 +101,8 @@ class InterfaceBuilderVisitor(IDLVisitor):
 
     def visitStatement_struct(self, ctx: IDLParser.Statement_structContext) -> IDLType:
         declarations = self.visit(ctx.declaration_block())
+        if not declarations:
+            declarations = []
         declarations = {i.name: i.type for i in declarations}
         return IDLTypeStruct(ctx.ID().getText(), declarations)
 

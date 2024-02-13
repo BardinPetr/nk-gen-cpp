@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "{{ ns }}/{{ cls }}.idl.h"
+#include "NkArena.hpp"
 
 namespace {{ ns }} {
     using std::vector;
@@ -23,6 +24,9 @@ namespace {{ ns }} {
     private:
         NkKosTransport *transport;
         nk_iid_t riid;
+
+        NkArena<{{ ns }}_{{ cls }}_req_arena_size> reqArena;
+        NkArena<{{ ns }}_{{ cls }}_res_arena_size> resArena;
 
     public:
     {% for t in ctx.typedefs %}

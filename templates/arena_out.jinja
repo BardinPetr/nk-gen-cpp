@@ -1,0 +1,63 @@
+{% macro arena_get(arena_type, base_name, name, root, level=0) -%}
+
+    // begin arg {{ name }} {{ root | type }}
+
+    {% if root | type == "IDLTypeList" %}
+        {{ arena_get_vector(arena_type, base_name, name, root.element, level) }}
+    {% else %}
+        // Not implemented or invalid usage!
+    {% endif %}
+
+    // end arg {{ name }}
+
+{%- endmacro %}
+
+
+{% macro arena_get_vector(arena_type, bn, ptr_name, child, level) -%}
+
+    {% if ctx.resolve_storage(child).name == "ARENA" %}
+
+        nk_uint32_t {{ cnt(bn,level) }};
+        nk_ptr_t* {{ ptr(bn,level) }} = nk_arena_get(
+                nk_ptr_t,
+                &{{ arena_type }}Arena,
+                &{{ ptr_name }},
+                &{{ cnt(bn,level) }}
+        );
+
+        for (nk_uint32_t {{ i(level) }} = 0; {{ i(level) }} < {{ cnt(bn,level) }}; {{ i(level) }}++) {
+
+            {{ arena_get(arena_type, bn, "{}[{}]".format(ptr(bn, level), i(level)), child, level + 1) }}
+
+        }
+
+    {% else %}
+
+        nk_uint32_t {{ cnt(bn,level) }};
+        {{ child }}* {{ ptr(bn,level) }} = nk_arena_get(
+                {{ child }},
+                &{{ arena_type }}Arena,
+                &{{ ptr_name }},
+                &{{ cnt(bn,level) }}
+        );
+
+    {% endif %}
+
+{%- endmacro %}
+
+{% macro idify(base) -%}
+    {{ base | replace(".", "_") | lower }}
+{%- endmacro %}
+
+{% macro cnt(base,level) -%}
+    cnt_{{ idify(base) }}_{{ level }}
+{%- endmacro %}
+
+{% macro ptr(base,level) -%}
+    ptr_{{ idify(base) }}_{{ level }}
+{%- endmacro %}
+
+{% macro i(level) -%}
+    i_{{ level }}
+{%- endmacro %}
+

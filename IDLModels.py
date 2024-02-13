@@ -33,6 +33,10 @@ class IDLMethodArgument:
     def name(self):
         return self.decl.name
 
+    @property
+    def type(self):
+        return self.decl.type
+
 
 @dataclass
 class IDLMethod:

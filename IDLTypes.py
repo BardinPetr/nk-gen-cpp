@@ -27,8 +27,12 @@ class IDLTypeStruct(IDLType):
     name: str
     children: Dict[str, IDLType]
 
+    def __post_init__(self):
+        self.storage = IDLTypeStorage.REFERENCE
+
     def __str__(self):
         return self.name
+
 
 @dataclass
 class IDLTypeTypeDef(IDLType):
@@ -55,6 +59,10 @@ class IDLTypePrimitive(StrEnum):
     SInt64 = "nk_sint64_t"
     Handle = "Handle"
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.storage = IDLTypeStorage.VALUE
+
     def __str__(self):
         return self.value
 
@@ -63,6 +71,7 @@ class IDLTypePrimitive(StrEnum):
 class IDLTypeList(IDLType):
     container: IDLTypeContainerPrimitive
     element: IDLType
+    storage = IDLTypeStorage.ARENA
 
     def __str__(self):
         return f"vector<{self.element}>"
