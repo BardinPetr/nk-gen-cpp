@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum, Enum
-from typing import Dict, Optional
+from typing import Dict
 
 
 class IDLTypeContainerPrimitive(StrEnum):
@@ -17,8 +17,9 @@ class IDLTypeStorage(Enum):
 
 
 class IDLType:
-    resolves: 'IDLType'
-    storage: IDLTypeStorage = IDLTypeStorage.VALUE
+    def __init__(self):
+        self.original: 'IDLType' = self
+        self.storage: IDLTypeStorage = IDLTypeStorage.VALUE
 
 
 @dataclass
@@ -26,6 +27,8 @@ class IDLTypeStruct(IDLType):
     name: str
     children: Dict[str, IDLType]
 
+    def __str__(self):
+        return self.name
 
 @dataclass
 class IDLTypeTypeDef(IDLType):
@@ -41,7 +44,7 @@ class IDLTypeID(IDLType):
         return self.name
 
 
-class IDLTypePrimitive(IDLType, StrEnum):
+class IDLTypePrimitive(StrEnum):
     UInt8 = "nk_uint8_t"
     UInt16 = "nk_uint16_t"
     UInt32 = "nk_uint32_t"

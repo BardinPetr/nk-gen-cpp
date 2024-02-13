@@ -1,4 +1,4 @@
-{% autoescape true %}
+{% autoescape false %}
 
 {% import "method.jinja" as method %}
 {% set guard = (ns + "_" + cls + "_IDL_HPP") | upper %}
@@ -12,24 +12,39 @@
 
 #include <coresrv/sl/sl_api.h>
 #include <coresrv/nk/transport-kos.h>
+#include <vector>
 
 #include "{{ ns }}/{{ cls }}.idl.h"
 
 namespace {{ ns }} {
+    using std::vector;
 
-class {{ cls }} {
-private:
-NkKosTransport *transport;
-nk_iid_t riid;
+    class {{ cls }} {
+    private:
+        NkKosTransport *transport;
+        nk_iid_t riid;
 
-public:
-{{ cls }}(NkKosTransport *transport, nk_iid_t riid);
-{{ cls }}(NkKosTransport *transport, const char* endpoint_name);
+    public:
+    {% for t in ctx.typedefs %}
+        using {{ t }} = {{ ctx.fqn }}_{{ t }};
+    {%- endfor %}
 
-{% for m in methods %}
-    {{ method.method_def(m.name, method_printer.in_args(m), method_printer.return_type(m)) }}
-{% endfor %}
-};
+    {% for m in methods %}
+        struct {{ m.name }}Response {
+            nk_err_t status;
+        {% for a in m.arguments | out_args %}
+            {{ a.decl.type }} {{ a.name }};
+        {%- endfor %}
+        };
+    {%- endfor %}
+
+        {{ cls }}(NkKosTransport *transport, nk_iid_t riid);
+        {{ cls }}(NkKosTransport *transport, const char* endpoint_name);
+
+    {% for m in methods %}
+        {{ method.method_def(m.name, method_printer.arguments(m), method_printer.return_type(m)) }}
+    {%- endfor %}
+    };
 
 };
 

@@ -1,7 +1,7 @@
 {% macro proxy(ctx, m) -%}
 
     {{ method_printer.method_request_type(m) }} req{
-            {}, {{ m.in_args | map(attribute='name') | join(', ') }}
+            {}, {{ m.arguments | fixed_args | in_args | map(attribute='name') | join(', ') }}
     };
     static {{ method_printer.method_response_type(m) }} res{};
 
@@ -36,9 +36,13 @@
             nullptr
     );
 
-    if (rc != NK_EOK)
-        throw rc;
+    static {{ method_printer.response_wrapper_name(m) }} out{
+        rc,
+        {% for a in m.arguments | out_args | fixed_args %}
+            res.{{ a.name }},
+        {%- endfor %}
+    };
 
-    return &res;
+    return out;
 
 {%- endmacro %}

@@ -2,6 +2,7 @@ from typing import Optional
 
 from antlr4 import *
 
+from IDLContext import IDLContext
 from IDLModels import *
 from IDLTypes import *
 
