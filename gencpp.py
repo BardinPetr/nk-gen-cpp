@@ -59,7 +59,7 @@ class MethodPrinter:
 class InterfacePrinter:
     def __init__(self):
         self.env = Environment(
-            loader=PackageLoader("printer"),
+            loader=PackageLoader("gencpp"),
             autoescape=select_autoescape()
         )
         self.env.filters["type"] = lambda x: type(x).__name__
@@ -87,10 +87,9 @@ class InterfacePrinter:
         header = prettify(header)
         source = prettify(source)
 
-        base_path = f"{target_dir}/{ctx.classname}"
-        with open(f"{base_path}.idl.hpp", "w") as f:
+        with open(f"{target_dir}/include/{ctx.classname}.idl.hpp", "w") as f:
             f.write(header)
-        with open(f"{base_path}.idl.cpp", "w") as f:
+        with open(f"{target_dir}/src/{ctx.classname}.idl.cpp", "w") as f:
             f.write(source)
 
     @staticmethod

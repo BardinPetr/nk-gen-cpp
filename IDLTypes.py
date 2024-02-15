@@ -74,4 +74,6 @@ class IDLTypeList(IDLType):
     storage = IDLTypeStorage.ARENA
 
     def __str__(self):
+        if self.container == IDLTypeContainerPrimitive.String:
+            return "std::string"
         return f"vector<{self.element}>"

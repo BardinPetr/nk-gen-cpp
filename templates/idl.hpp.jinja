@@ -14,8 +14,8 @@
 #include <coresrv/nk/transport-kos.h>
 #include <vector>
 
-#include "{{ ns }}/{{ cls }}.idl.h"
-#include "NkArena.hpp"
+#include "{{ cls }}.idl.h"
+#include "XNkArena.hpp"
 
 namespace {{ ns }} {
     using std::vector;
@@ -25,8 +25,8 @@ namespace {{ ns }} {
         NkKosTransport *transport;
         nk_iid_t riid;
 
-        NkArena<{{ ns }}_{{ cls }}_req_arena_size> reqArena;
-        NkArena<{{ ns }}_{{ cls }}_res_arena_size> resArena;
+        XNkArena<{{ ns }}_{{ cls }}_req_arena_size> reqArena;
+        XNkArena<{{ ns }}_{{ cls }}_res_arena_size> resArena;
 
     public:
     {% for t in ctx.typedefs %}
