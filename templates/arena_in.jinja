@@ -1,0 +1,82 @@
+{% macro arena_set(arena_type, base_name, name, root, level=0) -%}
+
+    // begin arg {{ name }} {{ root | type }}
+
+    {% if root | type == "IDLTypeList" %}
+        {{ arena_set_vector(arena_type, base_name, name, root.element, level) }}
+    {% elif root | type == "IDLTypeString" %}
+        {{ arena_set_string(arena_type, base_name, name, level) }}
+    {% elif root | type == "IDLTypeStruct" %}
+        Structs with nested dynamic arrays could not be stored now
+    {% else %}
+        Invalid usage
+    {% endif %}
+
+    // end arg {{ name }}
+
+{%- endmacro %}
+
+{% macro arena_set_string(arena_type, bn, ptr_name, level) -%}
+
+    rtl_size_t {{ cnt(bn,level) }} = {{ bn }}.length() + 1;
+    nk_char_t* {{ ptr(bn,level) }} = nk_arena_alloc(
+        nk_char_t,
+        &{{ arena_type }}Arena,
+        &{{ ptr_name }},
+        {{ cnt(bn,level) }}
+    );
+    rtl_strncpy((char *) {{ ptr(bn,level) }}, (const char *) {{ bn }}.c_str(), {{ cnt(bn,level) }});
+
+{%- endmacro %}
+
+
+{% macro arena_set_vector(arena_type, bn, ptr_name, child, level) -%}
+    {% set element_value = "{}[{}]".format(bn, i(level)) %}
+
+    rtl_size_t {{ cnt(bn,level) }} = {{ bn }}.size();
+
+    {% if ctx.resolve_storage(child).name == "ARENA" %}
+
+        nk_ptr_t* {{ ptr(bn,level) }} = nk_arena_alloc(
+            nk_ptr_t,
+            &{{ arena_type }}Arena,
+            &{{ ptr_name }},
+            {{ cnt(bn,level) }}
+        );
+
+        for (nk_uint32_t {{ i(level) }} = 0; {{ i(level) }} < {{ cnt(bn,level) }}; {{ i(level) }}++) {
+            {{ arena_set(arena_type, element_value, "{}[{}]".format(ptr(bn, level), i(level)), child, level + 1) }}
+        }
+
+    {% else %}
+
+        {{ child }}* {{ ptr(bn,level) }} = nk_arena_alloc(
+            {{ child }},
+            &{{ arena_type }}Arena,
+            &{{ ptr_name }},
+            {{ cnt(bn,level) }}
+        );
+        rtl_memcpy({{ ptr(bn,level) }}, ({{ child }} *) {{ bn }}.data(), {{ cnt(bn,level) }} * sizeof({{ child }}));
+
+    {% endif %}
+
+{%- endmacro %}
+
+
+
+{% macro idify(base) -%}
+    {{ base | replace(".", "_") | replace("[", "_") | replace("]", "") | lower }}
+{%- endmacro %}
+
+{% macro cnt(base,level) -%}
+    cnt_{{ idify(base) }}_{{ level }}
+{%- endmacro %}
+
+{% macro ptr(base,level) -%}
+    ptr_{{ idify(base) }}_{{ level }}
+{%- endmacro %}
+
+{% macro i(level) -%}
+    i{{ level }}
+{%- endmacro %}
+

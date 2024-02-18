@@ -84,10 +84,10 @@ class InterfaceBuilderVisitor(IDLVisitor):
         if ct := ctx.TYPE_PRIMITIVE():
             return IDLTypePrimitive[ct.getText()]
         if ct := ctx.type_arr():
-            return IDLTypeList(
-                IDLTypeContainerPrimitive[ct.TYPE_ARR().getText().capitalize()],
-                IDLTypePrimitive.UInt8
-            )
+            base = IDLTypeContainerPrimitive[ct.TYPE_ARR().getText().capitalize()]
+            if base == IDLTypeContainerPrimitive.String:
+                return IDLTypeString()
+            return IDLTypeList(base, IDLTypePrimitive.UInt8)
         if ct := ctx.type_arr_generic():
             resolved_type = self.visit(ct.type_())
             return IDLTypeList(

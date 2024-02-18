@@ -1,9 +1,11 @@
-{% import "arena_out.jinja" as arena %}
+{% import "arena_out.jinja" as aout %}
+{% import "arena_in.jinja" as ain %}
+
 
 {% macro proxy(m) -%}
 
     {{ method_printer.method_request_type(m) }} req{
-            {}, {{ m.arguments | fixed_args | in_args | map(attribute='name') | join(', ') }}
+            {}, {{ method_printer.request_args_initializers(m.arguments | in_args) | join(', ') }}
     };
     static {{ method_printer.method_response_type(m) }} res{};
 
@@ -33,14 +35,16 @@
             {{ method_printer.method_response_type(m) }}_handles
     );
 
+    {% for a in m.arguments | in_args | arena_args %}
+        {{ ain.arena_set("req", a.fqn, "req.{}".format(a.name), a.type) }}
+    {% endfor %}
+
     nk_err_t rc = nk_transport_call(
             &this->transport->base,
             &req.base_,
-            nullptr,
             &reqArena,
             &res.base_,
             &resArena
-            nullptr
     );
 
 {#    static {{ method_printer.response_wrapper_name(m) }} out{#}
@@ -50,10 +54,10 @@
 {#        {%- endfor %}#}
 {#    };#}
 
-    {% for a in m.arguments | out_args | arena_args %}
-        {{ arena.arena_get("res", a.name, "res.{}".format(a.name), a.type) }}
-    {% endfor %}
+{#    {% for a in m.arguments | out_args | arena_args %}#}
+{#        {{ arena.arena_get("res", a.name, "res.{}".format(a.name), a.type) }}#}
+{#    {% endfor %}#}
 
-    return &res;
+    return rc;
 
 {%- endmacro %}

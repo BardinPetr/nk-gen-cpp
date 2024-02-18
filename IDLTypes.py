@@ -68,12 +68,17 @@ class IDLTypePrimitive(StrEnum):
 
 
 @dataclass
+class IDLTypeString(IDLType):
+    storage = IDLTypeStorage.ARENA
+    def __str__(self):
+        return "std::string"
+
+
+@dataclass
 class IDLTypeList(IDLType):
     container: IDLTypeContainerPrimitive
     element: IDLType
     storage = IDLTypeStorage.ARENA
 
     def __str__(self):
-        if self.container == IDLTypeContainerPrimitive.String:
-            return "std::string"
         return f"vector<{self.element}>"

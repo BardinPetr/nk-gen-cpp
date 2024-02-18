@@ -18,6 +18,6 @@ struct QQ {
 }
 interface {
     SetMode(
-        in CrossedDirectionsMode obj, in DirectionMode val, in TDSeq seq,
+        in CrossedDirectionsMode obj, in DirectionMode val, in TDSeq seq, in string<30> str,
         out DirectionColor oobj, out QQ oval, out sequence<TDSeq, 100> oseq);
 }

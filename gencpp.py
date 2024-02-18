@@ -30,7 +30,7 @@ class IdentifierPrinter:
         type_cpp = str(arg.decl.type)
         if arg.decl.type.storage != IDLTypeStorage.VALUE:
             type_cpp = f"const {type_cpp}&"
-        return f"{type_cpp} {arg.decl.name}"
+        return f"{type_cpp} {arg.fqn}"
 
 
 class MethodPrinter:
@@ -53,7 +53,10 @@ class MethodPrinter:
         return f"{self.ctx.namespace}::{self.ctx.classname}::{m.name}Response"
 
     def return_type(self, m: IDLMethod) -> str:
-        return f"const {self.ctx.namespace}_{self.ctx.classname}_{m.name}_res*"
+        return f"nk_err_t"
+
+    def request_args_initializers(self, a: List[IDLMethodArgument]):
+        return [("{}" if i.type.storage == IDLTypeStorage.ARENA else i.fqn) for i in a]
 
 
 class InterfacePrinter:

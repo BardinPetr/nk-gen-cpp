@@ -12,7 +12,7 @@ trafficlight::ILightMode::ILightMode(NkKosTransport *transport, const char *endp
         spdlog::error("Service RIID {} not found", endpoint_name);
     }
 }
-    const trafficlight_ILightMode_SetMode_res* trafficlight::ILightMode::SetMode(const CrossedDirectionsMode& obj, nk_uint32_t val, const vector<nk_uint8_t>& seq) {
+    nk_err_t trafficlight::ILightMode::SetMode(const CrossedDirectionsMode& obj, nk_uint32_t val, const vector<nk_uint8_t>& seq, const std::string& str) {
         trafficlight_ILightMode_SetMode_req req{
             {}, val
     };
@@ -39,48 +39,49 @@ trafficlight::ILightMode::ILightMode(NkKosTransport *transport, const char *endp
             &res,
             trafficlight_ILightMode_SetMode_res_handles
     );
+    
+        // begin arg req.obj IDLTypeStruct
+    
+        // Not implemented or invalid usage!
+    
+    // end arg req.obj
+    
+        // begin arg req.seq IDLTypeList
+    
+        
+        nk_uint32_t cnt_seq_0 = seq.size();
+        nk_uint8_t* ptr_seq_0 = nk_arena_get(
+                nk_uint8_t,
+                &reqArena,
+                &req.seq,
+                &cnt_seq_0
+        );
+        rtl_memcpy(ptr_seq_0, (nk_uint8_t *) seq.data(), cnt_seq_0 * sizeof(nk_uint8_t));
+    
+    
+    // end arg req.seq
+    
+        // begin arg req.str IDLTypeString
+    
+        rtl_size_t cnt_str_0 = str.length() + 1;
+    nk_char_t *ptr_str_0 = nk_arena_alloc(
+        nk_char_t,
+        &reqArena,
+        &req.str,
+        cnt_str_0
+    );
+    rtl_strncpy((char *) ptr_str_0, (const char *) str.c_str(), cnt_str_0);
+    
+    // end arg req.str
+    
     nk_err_t rc = nk_transport_call(
             &this->transport->base,
             &req.base_,
             nullptr,
+            &reqArena,
             &res.base_,
+            &resArena
             nullptr
     );
-    
-        // begin arg res.oval IDLTypeStruct
-    
-        // Not implemented or invalid usage!
-    
-    // end arg res.oval
-    
-        // begin arg res.oseq IDLTypeList
-    
-        
-        nk_uint32_t cnt_oseq_0;
-        nk_ptr_t* ptr_oseq_0 = nk_arena_get(
-                nk_ptr_t,
-                &resArena,
-                &res.oseq,
-                &cnt_oseq_0
-        );
-        for (nk_uint32_t i_0 = 0; i_0 < cnt_oseq_0; i_0++) {
-            // begin arg ptr_oseq_0[i_0] IDLTypeList
-    
-        
-        nk_uint32_t cnt_oseq_1;
-        nk_uint8_t* ptr_oseq_1 = nk_arena_get(
-                nk_uint8_t,
-                &resArena,
-                &ptr_oseq_0[i_0],
-                &cnt_oseq_1
-        );
-    
-    
-    // end arg ptr_oseq_0[i_0]
-        }
-    
-    
-    // end arg res.oseq
-    
-    return &res;
+    return rc;
     }

@@ -34,6 +34,10 @@ class IDLMethodArgument:
         return self.decl.name
 
     @property
+    def fqn(self):
+        return f"{self.dir.name.lower()}_{self.name}"
+
+    @property
     def type(self):
         return self.decl.type
 

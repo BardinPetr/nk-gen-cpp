@@ -37,7 +37,7 @@ namespace trafficlight {
         ILightMode(NkKosTransport *transport, nk_iid_t riid);
         ILightMode(NkKosTransport *transport, const char* endpoint_name);
     
-        const trafficlight_ILightMode_SetMode_res* SetMode(const CrossedDirectionsMode& obj, nk_uint32_t val, const vector<nk_uint8_t>& seq);
+        nk_err_t SetMode(const CrossedDirectionsMode& obj, nk_uint32_t val, const vector<nk_uint8_t>& seq, const std::string& str);
     };
 };
 #endif //TRAFFICLIGHT_ILIGHTMODE_IDL_HPP
