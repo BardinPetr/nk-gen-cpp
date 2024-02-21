@@ -35,15 +35,6 @@ namespace {{ ns }} {
         using {{ t }} = {{ ctx.fqn }}_{{ t }};
     {%- endfor %}
 
-    {% for m in methods %}
-        struct {{ m.name }}Response {
-            nk_err_t status;
-        {% for a in m.arguments | out_args %}
-            {{ a.decl.type }} {{ a.name }};
-        {%- endfor %}
-        };
-    {%- endfor %}
-
         {{ cls }}(NkKosTransport *transport, nk_iid_t riid);
         {{ cls }}(NkKosTransport *transport, const char* endpoint_name);
 

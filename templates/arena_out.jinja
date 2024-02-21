@@ -4,6 +4,8 @@
 
     {% if root | type == "IDLTypeList" %}
         {{ arena_get_vector(arena_type, base_name, name, root.element, level) }}
+    {% elif root | type == "IDLTypeString" %}
+        {{ arena_set_string(arena_type, base_name, name, level) }}
     {% else %}
         // Not implemented or invalid usage!
     {% endif %}
@@ -13,40 +15,56 @@
 {%- endmacro %}
 
 
+{% macro arena_set_string(arena_type, bn, ptr_name, level) -%}
+
+    rtl_size_t {{ cnt(bn,level) }};
+    nk_char_t* {{ ptr(bn,level) }} = nk_arena_get(
+        nk_char_t,
+        &{{ arena_type }}Arena,
+        &{{ ptr_name }},
+        &{{ cnt(bn,level) }}
+    );
+    {{ bn }}.assign({{ ptr(bn,level) }});
+
+
+{%- endmacro %}
+
+
 {% macro arena_get_vector(arena_type, bn, ptr_name, child, level) -%}
+    {% set element_value = "{}[{}]".format(bn, i(level)) %}
+
+    rtl_size_t {{ cnt(bn,level) }};
 
     {% if ctx.resolve_storage(child).name == "ARENA" %}
 
-        nk_uint32_t {{ cnt(bn,level) }};
         nk_ptr_t* {{ ptr(bn,level) }} = nk_arena_get(
-                nk_ptr_t,
-                &{{ arena_type }}Arena,
-                &{{ ptr_name }},
-                &{{ cnt(bn,level) }}
+            nk_ptr_t,
+            &{{ arena_type }}Arena,
+            &{{ ptr_name }},
+            &{{ cnt(bn,level) }}
         );
+        {{ bn }}.resize({{ cnt(bn,level) }});
 
         for (nk_uint32_t {{ i(level) }} = 0; {{ i(level) }} < {{ cnt(bn,level) }}; {{ i(level) }}++) {
-
-            {{ arena_get(arena_type, bn, "{}[{}]".format(ptr(bn, level), i(level)), child, level + 1) }}
-
+            {{ arena_get(arena_type, element_value, "{}[{}]".format(ptr(bn, level), i(level)), child, level + 1) }}
         }
 
     {% else %}
 
-        nk_uint32_t {{ cnt(bn,level) }};
         {{ child }}* {{ ptr(bn,level) }} = nk_arena_get(
-                {{ child }},
-                &{{ arena_type }}Arena,
-                &{{ ptr_name }},
-                &{{ cnt(bn,level) }}
+            {{ child }},
+            &{{ arena_type }}Arena,
+            &{{ ptr_name }},
+            &{{ cnt(bn,level) }}
         );
+        {{ bn }}.assign({{ ptr(bn,level) }}, {{ ptr(bn,level) }} + {{ cnt(bn,level) }});
 
     {% endif %}
 
 {%- endmacro %}
 
 {% macro idify(base) -%}
-    {{ base | replace(".", "_") | lower }}
+    {{ base | replace(".", "_") | replace("[", "_") | replace("]", "") | lower }}
 {%- endmacro %}
 
 {% macro cnt(base,level) -%}

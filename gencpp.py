@@ -28,8 +28,12 @@ class IdentifierPrinter:
 
     def print_method_argument(self, arg: IDLMethodArgument) -> str:
         type_cpp = str(arg.decl.type)
-        if arg.decl.type.storage != IDLTypeStorage.VALUE:
+        stor = arg.decl.type.storage
+        dir = arg.dir
+        if dir == IDLMethodArgumentDirection.IN and stor != IDLTypeStorage.VALUE:
             type_cpp = f"const {type_cpp}&"
+        elif dir == IDLMethodArgumentDirection.OUT:
+            type_cpp = f"{type_cpp}&"
         return f"{type_cpp} {arg.fqn}"
 
 
@@ -47,7 +51,7 @@ class MethodPrinter:
 
     def arguments(self, m: IDLMethod) -> List[str]:
         args = sorted(m.arguments, key=lambda x: x.dir)
-        return [self.id_printer.print_method_argument(i) for i in args if i.dir == IDLMethodArgumentDirection.IN]
+        return [self.id_printer.print_method_argument(i) for i in args]
 
     def response_wrapper_name(self, m: IDLMethod):
         return f"{self.ctx.namespace}::{self.ctx.classname}::{m.name}Response"

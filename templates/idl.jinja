@@ -47,17 +47,17 @@
             &resArena
     );
 
-{#    static {{ method_printer.response_wrapper_name(m) }} out{#}
-{#        rc,#}
-{#        {% for a in m.arguments | out_args | fixed_args %}#}
-{#            res.{{ a.name }},#}
-{#        {%- endfor %}#}
-{#    };#}
+    if(rc != rcOk)
+        return rc;
 
-{#    {% for a in m.arguments | out_args | arena_args %}#}
-{#        {{ arena.arena_get("res", a.name, "res.{}".format(a.name), a.type) }}#}
-{#    {% endfor %}#}
+    {% for a in m.arguments | out_args | fixed_args %}
+        out_{{ a.name }} = res.{{ a.name }};
+    {% endfor %}
 
-    return rc;
+    {% for a in m.arguments | out_args | arena_args %}
+        {{ aout.arena_get("res", a.fqn, "res.{}".format(a.name), a.type) }}
+    {% endfor %}
+
+    return rcOk;
 
 {%- endmacro %}
